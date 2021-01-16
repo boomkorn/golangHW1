@@ -13,13 +13,17 @@ func main() {
 	ul := golanghw1.GetUser(fs.ReadFile())
 
 	if len(os.Args) <= 1 {
-		fmt.Println("Invalid argument")
+		fmt.Println("Please input with following function")
+		fmt.Println("- add name={string} age={int}")
+		fmt.Println("- list")
+		fmt.Println("- clear")
+		fmt.Println("- remove")
 	} else {
 		switch os.Args[1] {
 		case "add":
 			addUser(ul, fs)
 		case "list":
-			ul.Print()
+			ul.PrintUser()
 		case "clear":
 			fs.ClearFile()
 		case "remove":
@@ -34,9 +38,12 @@ func addUser(ul golanghw1.UserList, fs golanghw1.FileStore) {
 		nameContext := strings.Split(os.Args[2], "=")
 		ageContext := strings.Split(os.Args[3], "=")
 		name := nameContext[len(nameContext)-1]
-		age, _ := strconv.Atoi(ageContext[len(ageContext)-1])
-
-		ul.AddUser(golanghw1.User{len(ul.Users) + 1, name, age}, fs)
+		age, err := strconv.Atoi(ageContext[len(ageContext)-1])
+		if err != nil {
+			fmt.Printf("Age type is only int, please try again")
+		} else {
+			ul.AddUser(golanghw1.User{len(ul.Users) + 1, name, age}, fs)
+		}
 	} else {
 		fmt.Println("Invalid argument")
 	}
