@@ -1,7 +1,6 @@
 package golanghw1
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"os"
 )
@@ -22,8 +21,7 @@ func (fs FileStore) ReadFile() []byte {
 	}
 	return nil
 }
-func (fs FileStore) WriteFile(ul UserList) {
-	jsonByte, _ := json.Marshal(ul.Users)
+func (fs FileStore) WriteFile(jsonByte []byte) {
 	ioutil.WriteFile(fs.FileName, jsonByte, os.ModePerm)
 }
 func (fs FileStore) ClearFile() {

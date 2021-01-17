@@ -4,13 +4,10 @@ import (
 	"fmt"
 	"golanghw1"
 	"os"
-	"strconv"
-	"strings"
 )
 
 func main() {
-	fs := golanghw1.FileStore{"users.json"}
-	ul := golanghw1.GetUser(fs.ReadFile())
+	us := golanghw1.UserService{"users.json"}
 
 	if len(os.Args) <= 1 {
 		fmt.Println("Please input with following function")
@@ -21,40 +18,15 @@ func main() {
 	} else {
 		switch os.Args[1] {
 		case "add":
-			addUser(ul, fs)
+			us.AddUser(os.Args[2], os.Args[3])
 		case "list":
-			ul.PrintUser()
+			us.PrintUser()
 		case "clear":
-			fs.ClearFile()
+			us.ClearUser()
 		case "remove":
-			fs.RemoveFile()
+			us.RemoveUser()
 		default:
 			fmt.Println("Invalid method")
 		}
 	}
-}
-func addUser(ul golanghw1.UserList, fs golanghw1.FileStore) {
-	if checkAddArgument(os.Args) {
-		nameContext := strings.Split(os.Args[2], "=")
-		ageContext := strings.Split(os.Args[3], "=")
-		name := nameContext[len(nameContext)-1]
-		age, err := strconv.Atoi(ageContext[len(ageContext)-1])
-		if err != nil {
-			fmt.Printf("Age type is only int, please try again")
-		} else {
-			ul.AddUser(golanghw1.User{len(ul.Users) + 1, name, age}, fs)
-		}
-	} else {
-		fmt.Println("Invalid argument")
-	}
-}
-func checkAddArgument(osArg []string) bool {
-	if len(osArg) != 4 {
-		return false
-	} else if s := strings.Split(osArg[2], "="); len(s) == 2 && s[0] != "name" {
-		return false
-	} else if s := strings.Split(osArg[3], "="); len(s) == 2 && s[0] != "age" {
-		return false
-	}
-	return true
 }
