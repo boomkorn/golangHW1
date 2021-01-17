@@ -4,15 +4,16 @@ import (
 	"app/db"
 	"app/user"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func Start() {
-	router := gin.Default()
+	router := echo.New()
 
 	// ===== Middlewares
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
+	router.Use(middleware.Logger())
+	router.Use(middleware.Recover())
 
 	// ===== Initial resource from MongoDB
 	dbConnection := db.Connection{"user", "password", "demo", "localhost"}
@@ -24,6 +25,5 @@ func Start() {
 	user.SetupRouter(publicRoute, resource)
 
 	// ===== Start server
-	router.Run() // listen and serve on 0.0.0.0:8080
-	// can use router.Run({port number}) ex. router.Run(:9999)
+	router.Start(":8080")
 }

@@ -3,10 +3,10 @@ package user
 import (
 	"app/db"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 )
 
-func SetupRouter(app *gin.RouterGroup, resource *db.Resource) {
+func SetupRouter(app *echo.Group, resource *db.Resource) {
 	repository := createUserRepository(resource)
 
 	app.GET("/users", getUserHandler(repository))
