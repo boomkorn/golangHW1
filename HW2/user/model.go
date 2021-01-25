@@ -52,7 +52,8 @@ type ReqSaveProfile struct {
 }
 type ReqChangePassword struct {
 	// Email    string `bson:"email" json:"email"`
-	Password string `bson:"password" json:"password"`
+	OldPassword string `bson:"oldPassword" json:"oldPassword"`
+	Password    string `bson:"password" json:"password"`
 }
 
 // API response model

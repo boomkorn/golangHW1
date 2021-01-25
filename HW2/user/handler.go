@@ -15,10 +15,10 @@ func registerHandler(repo repository) func(c echo.Context) error {
 		code := http.StatusOK
 		if err := c.Bind(body); err != nil {
 			// return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-			return c.JSON(code, ResponseDefault{400, "Input not match, please try again"})
+			return c.JSON(code, ResponseDefault{400, "Parameter invalid, please try again"})
 		} else if err := repo.register(body); err != nil {
 			// return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-			return c.JSON(code, ResponseDefault{400, "Something wrong, please try again"})
+			return c.JSON(code, ResponseDefault{400, fmt.Sprintf("Something wrong, please try again : %v", err)})
 		}
 		return c.JSON(http.StatusOK, ResponseDefault{200, "Registeration success"})
 	}
@@ -30,7 +30,7 @@ func loginHandler(repo repository) func(c echo.Context) error {
 		code := http.StatusOK
 		if err := c.Bind(body); err != nil {
 			// return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-			return c.JSON(code, ResponseDefault{400, "Input not match, please try again"})
+			return c.JSON(code, ResponseDefault{400, "Parameter invalid, please try again"})
 		}
 		user, err := repo.login(body)
 		if err != nil {
@@ -49,7 +49,7 @@ func saveProfileHandler(repo repository) func(c echo.Context) error {
 
 		code := http.StatusOK
 		if err := c.Bind(body); err != nil {
-			return c.JSON(code, ResponseDefault{400, "Input not match, please try again"})
+			return c.JSON(code, ResponseDefault{400, "Parameter invalid, please try again"})
 		}
 
 		claims := token.Claims.(*service.JWTClaimsModel)
@@ -69,7 +69,7 @@ func changePasswordHandler(repo repository) func(c echo.Context) error {
 
 		code := http.StatusOK
 		if err := c.Bind(body); err != nil {
-			return c.JSON(code, ResponseDefault{400, "Input not match, please try again"})
+			return c.JSON(code, ResponseDefault{400, "Parameter invalid, please try again"})
 		}
 
 		claims := token.Claims.(*service.JWTClaimsModel)

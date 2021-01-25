@@ -3,6 +3,8 @@ package user
 import (
 	"app/db"
 	"context"
+	"errors"
+	"regexp"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -10,6 +12,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
+var emailRegex = regexp.MustCompile("[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}")
 
 type userRepository struct {
 	resource   *db.Resource
@@ -43,6 +47,14 @@ func (ur *userRepository) register(req *ReqRegister) error {
 
 	// data := []byte(req.Password)
 
+	_, err := ur.getUser(req.Email)
+	if err == nil {
+		return errors.New("Email is existed")
+	}
+	if !emailRegex.MatchString(req.Email) {
+		return errors.New("Incorrect email format")
+	}
+
 	user := User{
 		Id:    primitive.NewObjectID(),
 		Email: req.Email,
@@ -53,7 +65,7 @@ func (ur *userRepository) register(req *ReqRegister) error {
 		LastLoginDate: time.Now(),
 	}
 
-	_, err := ur.collection.InsertOne(ctx, user)
+	_, err = ur.collection.InsertOne(ctx, user)
 	return err
 }
 func (ur *userRepository) login(req *ReqLogin) (ResponseUser, error) {
@@ -63,7 +75,7 @@ func (ur *userRepository) login(req *ReqLogin) (ResponseUser, error) {
 	var user = ResponseUser{}
 	err := ur.collection.FindOne(ctx, bson.M{"email": req.Email, "password": req.Password}).Decode(&user)
 	if err != nil {
-		return ResponseUser{}, err
+		return ResponseUser{}, errors.New("Wrong email or password")
 	}
 
 	user.LastLoginDate = time.Now()
@@ -138,7 +150,8 @@ func (ur *userRepository) updatePassword(userId string, req *ReqChangePassword) 
 	if err != nil {
 		return err
 	}
-	filter := bson.M{"_id": objId}
+
+	filter := bson.M{"_id": objId, "password": req.OldPassword}
 	update := bson.M{
 		"$set": bson.M{
 			"password":    req.Password,
@@ -146,7 +159,10 @@ func (ur *userRepository) updatePassword(userId string, req *ReqChangePassword) 
 		},
 	}
 
-	_, err = ur.collection.UpdateOne(ctx, filter, update)
+	res, err := ur.collection.UpdateOne(ctx, filter, update)
+	if res.ModifiedCount == 0 {
+		err = errors.New("Old password incorrect")
+	}
 
 	return err
 }
@@ -170,4 +186,17 @@ func (ur *userRepository) getAllUser() (Users, error) {
 		users = append(users, user)
 	}
 	return users, nil
+}
+
+func (ur *userRepository) getUser(email string) (ResponseUser, error) {
+	ctx, cancel := initContext()
+	defer cancel()
+
+	var user = ResponseUser{}
+
+	err := ur.collection.FindOne(ctx, bson.M{"email": email}).Decode(&user)
+	if err != nil {
+		return ResponseUser{}, err
+	}
+	return user, nil
 }
